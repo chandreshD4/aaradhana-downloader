@@ -1,17 +1,17 @@
 name: aaradhana_downloader
 description: "Aaradhana Downloader VIP Edition"
-publish_to: 'none'
+publish_to: "none"
 version: 1.0.0+7
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
   http: ^1.1.0
   permission_handler: ^11.0.1
-  audioplayers: ^6.0.0
+  audioplayers: 0.20.1
 
 dev_dependencies:
   flutter_test:
