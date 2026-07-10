@@ -20,12 +20,24 @@ jobs:
         with:
           channel: 'stable'
 
-      # बिना किसी एरर के साफ-सुथरा एंड्रॉइड ढांचा तैयार करना
+      # 1. पहले साफ ढांचा बनाना
       - name: Auto Create Android Project Structure
         run: |
           rm -rf android
           flutter create . --platforms=android
+
+      # 2. गिटहब खुद ही एंड्रॉइड फाइल के अंदर वीआईपी परमिशन डाल देगा!
+      - name: Inject Internet and Storage Permissions
+        run: |
+          MANIFEST_PATH="android/app/src/main/AndroidManifest.xml"
+          PERMISSIONS='<uses-permission android:name="android.permission.INTERNET" />\n    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />\n    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />\n    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />'
           
+          # <manifest टैग के तुरंत बाद परमिशन जोड़ना
+          sed -i "s|<manifest[^>]*>|&\n    $PERMISSIONS|" $MANIFEST_PATH
+          
+          # application टैग में legacy storage को इनेबल करना
+          sed -i 's|<application|<application android:requestLegacyExternalStorage="true"|' $MANIFEST_PATH
+
       - name: Get Dependencies
         run: flutter pub get
         
