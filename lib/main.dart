@@ -15,7 +15,7 @@ class AaradhanaDownloaderApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'आराधना Downloader VIP',
+      title: 'આરાધના Downloader VIP',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         scaffoldBackgroundColor: Colors.white,
@@ -41,10 +41,8 @@ class _DownloadScreenState extends State<DownloadScreen> {
   String _statusMessage = "";
   bool _isSuccess = false;
 
-  // सभी API के लिए कॉमन सीक्रेट की (Key)
   final String _apiKey = "2a2d800e5cmsh0798dd20ef51d17p1d9715jsn2c69b2d0f7d3";
 
-  // यूट्यूब यूआरएल से वीडियो आईडी (Video ID) निकालने का फ़ंक्शन
   String _extractVideoId(String url) {
     if (url.contains("youtu.be/")) {
       return url.split("youtu.be/")[1].split("?")[0].trim();
@@ -56,7 +54,6 @@ class _DownloadScreenState extends State<DownloadScreen> {
     return url.trim();
   }
 
-  // स्टोरेज परमिशन मांगने और फोल्डर बनाने का फ़ंक्शन
   Future<Directory?> _prepareStorageFolder() async {
     if (Platform.isAndroid) {
       if (await Permission.manageExternalStorage.request().isGranted ||
@@ -71,54 +68,44 @@ class _DownloadScreenState extends State<DownloadScreen> {
     return null;
   }
 
-  // फ़ाइल को सेव करने का फ़ंक्शन
   Future<void> _saveFile(List<int> bytes, String prefix, String extension) async {
     final folder = await _prepareStorageFolder();
-    if (folder == null) throw Exception("स्टोरेज परमिशन नहीं मिली!");
+    if (folder == null) throw Exception("સ્ટોરેજ પરમિશન નથી મળી!");
     
     final fileName = "${prefix}_${DateTime.now().millisecondsSinceEpoch}.$extension";
     final file = File("${folder.path}/$fileName");
     await file.writeAsBytes(bytes);
   }
 
-  // डाउनलोड पूरा होने पर केवल एक बार ऑडियो बजाने का फ़ंक्शन
   Future<void> _playSuccessAudio() async {
     try {
       await _audioPlayer.play(AssetSource('raju_bhai.mp3'));
     } catch (e) {
-      debugPrint("ऑडियो प्ले करने में एरर: $e");
+      debugPrint("ઓડિયો પ્લે કરવામાં એરર: $e");
     }
   }
 
-  // मुख्य डाउनलोडर इंजन (ऑटो-स्विचिंग सिस्टम)
   Future<void> _startDownloadProcess(bool isAudio) async {
     final rawUrl = _urlController.text.trim();
     if (rawUrl.isEmpty) {
-      setState(() => _statusMessage = "❌ कृपया पहले यूट्यूब लिंक डालें!");
+      setState(() => _statusMessage = "❌ કૃપા કરીને પહેલા યુટ્યુબ લિંક નાખો!");
       return;
     }
 
     setState(() {
       _isLoading = true;
       _progress = 0.1;
-      _statusMessage = "🚀 वीआईपी सर्वर से कनेक्ट हो रहा है...";
+      _statusMessage = "🚀 વીઆઈપી સર્વર સાથે કનેક્ટ થઈ રહ્યું છે...";
       _isSuccess = false;
     });
 
     final videoId = _extractVideoId(rawUrl);
-
-    // चेन सिस्टम: एक-एक करके सभी API ट्राई करेगा
     bool success = false;
 
-    // 1. पहली API ट्राई करें
     if (!success) success = await _tryApi1(videoId, rawUrl, isAudio);
-    // 2. दूसरी API ट्राई करें
     if (!success) success = await _tryApi2(videoId, isAudio);
-    // 3. तीसरी API ट्राई करें
     if (!success) success = await _tryApi3(videoId, isAudio);
-    // 4. चौथी API ट्राई करें
     if (!success) success = await _tryApi4(rawUrl, isAudio);
-    // 5. पांचवीं API ट्राई करें (केवल ऑडियो के लिए)
     if (!success) success = await _tryApi5(videoId, isAudio);
 
     setState(() {
@@ -126,23 +113,19 @@ class _DownloadScreenState extends State<DownloadScreen> {
       if (success) {
         _progress = 1.0;
         _isSuccess = true;
-        _statusMessage = "✅ 'RajuBhai' फोल्डर में सफलतापूर्वक सेव हो गया!";
-      });
-      // सफलता मिलने पर आपकी वॉयस टोन बजाएं
-      _playSuccessAudio();
-    } else {
-      setState(() {
+        _statusMessage = "✅ 'RajuBhai' ફોલ્ડરમાં સફળતાપૂર્વક સેવ થઈ ગયું!";
+        _playSuccessAudio();
+      } else {
         _progress = 0.0;
         _isSuccess = false;
-        _statusMessage = "❌ डाउनलोड फेल हुआ! सभी वीआईपी लिमिट समाप्त हो चुकी हैं।";
-      });
-    }
+        _statusMessage = "❌ ડાઉનલોડ ફેલ થયું! બધી વીઆઈપી લિમિટ સમાપ્ત થઈ ગઈ છે.";
+      }
+    });
   }
 
-  // ================= API 1: youtube-media-downloader =================
   Future<bool> _tryApi1(String id, String fullUrl, bool isAudio) async {
     try {
-      setState(() => _statusMessage = "⏳ सर्वर 1 से प्रयास किया जा रहा है...");
+      setState(() => _statusMessage = "⏳ સર્વર 1 થી પ્રયાસ કરવામાં આવી રહ્યો છે...");
       final response = await http.get(
         Uri.parse("https://youtube-media-downloader.p.rapidapi.com/v2/video/details?videoId=$id"),
         headers: {"x-rapidapi-key": _apiKey, "x-rapidapi-host": "youtube-media-downloader.p.rapidapi.com"},
@@ -162,10 +145,9 @@ class _DownloadScreenState extends State<DownloadScreen> {
     } catch (_) { return false; }
   }
 
-  // ================= API 2: youtube-video-fast-downloader-24-7 =================
   Future<bool> _tryApi2(String id, bool isAudio) async {
     try {
-      setState(() => _statusMessage = "⏳ सर्वर 2 (फ़ास्ट ट्रैक) से प्रयास जारी...");
+      setState(() => _statusMessage = "⏳ સર્વर 2 થી પ્રયાસ ચાલુ છે...");
       String endpoint = isAudio 
         ? "https://youtube-video-fast-downloader-24-7.p.rapidapi.com/download_audio/$id?quality=251"
         : "https://youtube-video-fast-downloader-24-7.p.rapidapi.com/download_video/$id?quality=22";
@@ -182,10 +164,9 @@ class _DownloadScreenState extends State<DownloadScreen> {
     } catch (_) { return false; }
   }
 
-  // ================= API 3: youtube-mp4-mp3-downloader =================
   Future<bool> _tryApi3(String id, bool isAudio) async {
     try {
-      setState(() => _statusMessage = "⏳ सर्वर 3 एक्टिवेट किया जा रहा है...");
+      setState(() => _statusMessage = "⏳ સર્વર 3 એક્ટિવેટ કરવામાં આવી રહ્યું છે...");
       String format = isAudio ? "128" : "720";
       final response = await http.get(
         Uri.parse("https://youtube-mp4-mp3-downloader.p.rapidapi.com/api/v1/download?format=$format&id=$id&audioQuality=128"),
@@ -199,10 +180,9 @@ class _DownloadScreenState extends State<DownloadScreen> {
     } catch (_) { return false; }
   }
 
-  // ================= API 4: all-media-downloader4 =================
   Future<bool> _tryApi4(String fullUrl, bool isAudio) async {
     try {
-      setState(() => _statusMessage = "⏳ सर्वर 4 (मीडिया हब) से कनेक्ट कर रहे हैं...");
+      setState(() => _statusMessage = "⏳ સર્વર 4 થી કનેક્ટ થઈ રહ્યું છે...");
       final response = await http.get(
         Uri.parse("https://all-media-downloader4.p.rapidapi.com/api/youtube/download?id=${Uri.encodeComponent(fullUrl)}"),
         headers: {"x-rapidapi-key": _apiKey, "x-rapidapi-host": "all-media-downloader4.p.rapidapi.com"},
@@ -220,11 +200,10 @@ class _DownloadScreenState extends State<DownloadScreen> {
     } catch (_) { return false; }
   }
 
-  // ================= API 5: youtube-mp3-downloader5 (केवल ऑडियो के लिए) =================
   Future<bool> _tryApi5(String id, bool isAudio) async {
-    if (!isAudio) return false; // यह API वीडियो सपोर्ट नहीं करती
+    if (!isAudio) return false;
     try {
-      setState(() => _statusMessage = "⏳ सर्वर 5 (सिर्फ ऑडियो) ट्रिगर कर रहे हैं...");
+      setState(() => _statusMessage = "⏳ સર્વર 5 (ફક્ત ઓડિયો) ટ્રિગર થઈ રહ્યું છે...");
       final response = await http.get(
         Uri.parse("https://youtube-mp3-downloader5.p.rapidapi.com/?youtube_url=https://www.youtube.com/watch?v=$id"),
         headers: {"x-rapidapi-key": _apiKey, "x-rapidapi-host": "youtube-mp3-downloader5.p.rapidapi.com"},
@@ -237,12 +216,11 @@ class _DownloadScreenState extends State<DownloadScreen> {
     } catch (_) { return false; }
   }
 
-  // बाइनरी डेटा डाउनलोड करके सेव करने का कॉमन इंजन
   Future<bool> _downloadBinary(String url, String type) async {
     try {
       setState(() {
         _progress = 0.5;
-        _statusMessage = "📥 फाइल डाउनलोड हो रही है... कृपया प्रतीक्षा करें...";
+        _statusMessage = "📥 ફાઇલ ડાઉનલોડ થઈ રહી છે... કૃપા કરીને પ્રતીક્ષા કરો...";
       });
       final fileRes = await http.get(Uri.parse(url));
       if (fileRes.statusCode == 200) {
@@ -269,7 +247,6 @@ class _DownloadScreenState extends State<DownloadScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // ऊपर सेंटर में गोल फ्रेम में आपकी प्रोफाइल पिक्चर (profile.png)
               Container(
                 width: 120,
                 height: 120,
@@ -290,16 +267,15 @@ class _DownloadScreenState extends State<DownloadScreen> {
               ),
               const SizedBox(height: 20),
               const Text(
-                "आराधना Downloader VIP",
+                "આરાધના Downloader VIP",
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87),
               ),
               const SizedBox(height: 40),
-              // बिना किसी बॉर्डर या डिब्बे के सीधा क्लीन इनपुट फील्ड
               TextField(
                 controller: _urlController,
                 style: const TextStyle(color: Colors.black),
                 decoration: InputDecoration(
-                  hintText: 'यहाँ यूट्यूब लिंक पेस्ट करें...',
+                  hintText: 'અહીં યુટ્યુબ લિંક પેસ્ટ કરો...',
                   hintStyle: const TextStyle(color: Colors.black38),
                   filled: true,
                   fillColor: const Color(0xFFF5F5F5),
@@ -310,11 +286,10 @@ class _DownloadScreenState extends State<DownloadScreen> {
                 ),
               ),
               const SizedBox(height: 30),
-              // लाल रंग के डाउनलोड बटन
               ElevatedButton.icon(
                 onPressed: _isLoading ? null : () => _startDownloadProcess(true),
                 icon: const Icon(Icons.music_note, color: Colors.white),
-                label: const Text("🎵 Download MP3 (ऑडियो)", style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
+                label: const Text("🎵 Download MP3 (ઓડિયો)", style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
                   minimumSize: const Size(double.infinity, 54),
@@ -326,7 +301,7 @@ class _DownloadScreenState extends State<DownloadScreen> {
               ElevatedButton.icon(
                 onPressed: _isLoading ? null : () => _startDownloadProcess(false),
                 icon: const Icon(Icons.movie, color: Colors.white),
-                label: const Text("🎥 Download Video (वीडियो)", style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
+                label: const Text("🎥 Download Video (વિડિયો)", style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
                   minimumSize: const Size(double.infinity, 54),
