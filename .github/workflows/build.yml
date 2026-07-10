@@ -19,6 +19,10 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+
+      # यहाँ गिटहब खुद ही पूरा एंड्रॉइड ढांचा ऑटो-क्रिएट कर लेगा!
+      - name: Auto Create Android Project Structure
+        run: flutter create . --platforms=android --force
           
       - name: Get Dependencies
         run: flutter pub get
