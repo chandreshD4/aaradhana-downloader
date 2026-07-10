@@ -20,9 +20,11 @@ jobs:
         with:
           channel: 'stable'
 
-      # यहाँ गिटहब खुद ही पूरा एंड्रॉइड ढांचा ऑटो-क्रिएट कर लेगा!
+      # बिना किसी एरर के साफ-सुथरा एंड्रॉइड ढांचा तैयार करना
       - name: Auto Create Android Project Structure
-        run: flutter create . --platforms=android --force
+        run: |
+          rm -rf android
+          flutter create . --platforms=android
           
       - name: Get Dependencies
         run: flutter pub get
