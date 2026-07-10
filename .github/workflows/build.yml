@@ -15,10 +15,11 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-      - name: Get Dependencies
-        run: flutter pub get
-      - name: Build APK
-        run: flutter build apk --release
+      - name: Clean Cache and Get Deps
+        run: |
+          flutter pub get
+      - name: Build APK Cleanly
+        run: flutter build apk --release --no-pub --no-shrink
       - name: Upload VIP APK Artifact
         uses: actions/upload-artifact@v4
         with:
