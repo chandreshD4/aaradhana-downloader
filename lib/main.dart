@@ -147,7 +147,7 @@ class _DownloadScreenState extends State<DownloadScreen> {
 
   Future<bool> _tryApi2(String id, bool isAudio) async {
     try {
-      setState(() => _statusMessage = "⏳ સર્વर 2 થી પ્રયાસ ચાલુ છે...");
+      setState(() => _statusMessage = "⏳ સર્વર 2 થી પ્રયાસ ચાલુ છે...");
       String endpoint = isAudio 
         ? "https://youtube-video-fast-downloader-24-7.p.rapidapi.com/download_audio/$id?quality=251"
         : "https://youtube-video-fast-downloader-24-7.p.rapidapi.com/download_video/$id?quality=22";
@@ -316,7 +316,7 @@ class _DownloadScreenState extends State<DownloadScreen> {
                     borderRadius: BorderRadius.circular(10),
                     child: LinearProgressIndicator(
                       value: _progress,
-                      backgroundColor: Colors.black10,
+                      backgroundColor: Colors.black12,
                       valueColor: const AlwaysStoppedAnimation<Color>(Colors.red),
                       minHeight: 6,
                     ),
