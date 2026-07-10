@@ -1,6 +1,7 @@
 name: aaradhana_downloader
-description: A VIP YouTube Audio/Video Downloader for RajuBhai.
-version: 1.0.0+1
+description: "Aaradhana Downloader VIP Edition"
+publish_to: 'none'
+version: 1.0.0+7
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -8,13 +9,18 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  http: ^1.1.0
   permission_handler: ^11.0.1
-  path_provider: ^2.1.1
-  dio: ^5.4.0
+  audioplayers: ^6.0.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_lints: ^3.0.0
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/profile.png
+    - assets/raju_bhai.mp3
