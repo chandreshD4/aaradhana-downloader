@@ -200,7 +200,7 @@ class _RajuBhaiDownloaderState extends State<RajuBhaiDownloader> {
                   const SizedBox(height: 15),
                   Text(
                     _statusText,
-                    textAlign: Center,
+                    textAlign: TextAlign.center,
                     style: const TextStyle(color: Colors.amber, fontSize: 14, fontWeight: FontWeight.w600),
                   ),
                 ],
