@@ -94,7 +94,7 @@ class _DownloadScreenState extends State<DownloadScreen> {
 
     setState(() {
       _isLoading = true;
-      _progress = 0.1;
+      _progress = 0.0;
       _statusMessage = "🚀 વીઆઈપી સર્વર સાથે કનેક્ટ થઈ રહ્યું છે...";
       _isSuccess = false;
     });
@@ -141,7 +141,7 @@ class _DownloadScreenState extends State<DownloadScreen> {
         if (videos != null && videos.isNotEmpty) dlUrl = videos.first['url'];
       }
       if (dlUrl == null) return false;
-      return await _downloadBinary(dlUrl, isAudio ? "MP3" : "MP4");
+      return await _downloadBinaryWithProgress(dlUrl, isAudio ? "MP3" : "MP4");
     } catch (_) { return false; }
   }
 
@@ -160,7 +160,7 @@ class _DownloadScreenState extends State<DownloadScreen> {
       final data = jsonDecode(response.body);
       String? dlUrl = data['link'] ?? data['url'];
       if (dlUrl == null) return false;
-      return await _downloadBinary(dlUrl, isAudio ? "MP3" : "MP4");
+      return await _downloadBinaryWithProgress(dlUrl, isAudio ? "MP3" : "MP4");
     } catch (_) { return false; }
   }
 
@@ -176,7 +176,7 @@ class _DownloadScreenState extends State<DownloadScreen> {
       final data = jsonDecode(response.body);
       String? dlUrl = data['link'] ?? data['url'] ?? data['download_url'];
       if (dlUrl == null) return false;
-      return await _downloadBinary(dlUrl, isAudio ? "MP3" : "MP4");
+      return await _downloadBinaryWithProgress(dlUrl, isAudio ? "MP3" : "MP4");
     } catch (_) { return false; }
   }
 
@@ -196,7 +196,7 @@ class _DownloadScreenState extends State<DownloadScreen> {
         dlUrl = data['video'] ?? data['formats']?[1]?['url'] ?? data['formats']?[0]?['url'];
       }
       if (dlUrl == null) return false;
-      return await _downloadBinary(dlUrl, isAudio ? "MP3" : "MP4");
+      return await _downloadBinaryWithProgress(dlUrl, isAudio ? "MP3" : "MP4");
     } catch (_) { return false; }
   }
 
@@ -212,22 +212,43 @@ class _DownloadScreenState extends State<DownloadScreen> {
       final data = jsonDecode(response.body);
       String? dlUrl = data['link'] ?? data['url'];
       if (dlUrl == null) return false;
-      return await _downloadBinary(dlUrl, "MP3");
+      return await _downloadBinaryWithProgress(dlUrl, "MP3");
     } catch (_) { return false; }
   }
 
-  Future<bool> _downloadBinary(String url, String type) async {
+  Future<bool> _downloadBinaryWithProgress(String url, String type) async {
     try {
-      setState(() {
-        _progress = 0.5;
-        _statusMessage = "📥 ફાઇલ ડાઉનલોડ થઈ રહી છે... કૃપા કરીને પ્રતીક્ષા કરો...";
-      });
-      final fileRes = await http.get(Uri.parse(url));
-      if (fileRes.statusCode == 200) {
-        await _saveFile(fileRes.bodyBytes, "RajuBhai", type.toLowerCase());
-        return true;
+      final request = http.Request('GET', Uri.parse(url));
+      final response = await http.Client().send(request);
+      
+      if (response.statusCode != 200) return false;
+
+      final totalBytes = response.contentLength ?? 0;
+      List<int> bytes = [];
+      num lastProgress = -1;
+
+      await for (var chunk in response.stream) {
+        bytes.addAll(chunk);
+        if (totalBytes > 0) {
+          double currentProgress = bytes.length / totalBytes;
+          int percent = (currentProgress * 100).toInt();
+          if (percent != lastProgress) {
+            lastProgress = percent;
+            setState(() {
+              _progress = currentProgress;
+              _statusMessage = "📥 ડાઉનલોડ થઈ રહ્યું છે: $percent%";
+            });
+          }
+        } else {
+          setState(() {
+            _progress = 0.5;
+            _statusMessage = "📥 ફાઇલ આવી રહી છે... કૃપા કરીને પ્રતીક્ષા કરો...";
+          });
+        }
       }
-      return false;
+
+      await _saveFile(bytes, "RajuBhai", type.toLowerCase());
+      return true;
     } catch (_) { return false; }
   }
 
