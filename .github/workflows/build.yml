@@ -15,21 +15,27 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-      - name: Add Launcher Icons Dependency
-        run: flutter pub add --dev flutter_launcher_icons
-      - name: Inject Launcher Icons Config
+      - name: Directly Replace Android Icons
         run: |
-          cat << 'INNER_EOF' >> pubspec.yaml
-
-          flutter_launcher_icons:
-            android: "launcher_icon"
-            image_path: "assets/icon.png"
-            remove_alpha_ios: true
-          INNER_EOF
+          mkdir -p android/app/src/main/res/mipmap-mdpi
+          mkdir -p android/app/src/main/res/mipmap-hdpi
+          mkdir -p android/app/src/main/res/mipmap-xhdpi
+          mkdir -p android/app/src/main/res/mipmap-xxhdpi
+          mkdir -p android/app/src/main/res/mipmap-xxxhdpi
+          
+          cp assets/icon.png android/app/src/main/res/mipmap-mdpi/ic_launcher.png
+          cp assets/icon.png android/app/src/main/res/mipmap-hdpi/ic_launcher.png
+          cp assets/icon.png android/app/src/main/res/mipmap-xhdpi/ic_launcher.png
+          cp assets/icon.png android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+          cp assets/icon.png android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+          
+          cp assets/icon.png android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png
+          cp assets/icon.png android/app/src/main/res/mipmap-hdpi/ic_launcher_round.png
+          cp assets/icon.png android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png
+          cp assets/icon.png android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png
+          cp assets/icon.png android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png
       - name: Get Dependencies
         run: flutter pub get
-      - name: Generate App Icons
-        run: flutter pub run flutter_launcher_icons
       - name: Build APK
         run: flutter build apk --release
       - name: Upload VIP APK Artifact
