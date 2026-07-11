@@ -23,11 +23,18 @@ jobs:
           rm -rf android
           flutter create --org com.example --platforms=android .
           
-      # सबसे सुरक्षित तरीका: सीधे local.properties में वर्जन 34 इंजेक्ट करना
-      - name: Configure Android SDK Versions Cleanly
+      # सीधे build.gradle में compileSdk और targetSdk को 34 पर फोर्स करना
+      # इससे audioplayers प्लगइन को उसका पसंदीदा 34 वर्जन मिल जाएगा
+      name: Force SDK Version 34 in Build Script
         run: |
-          echo "flutter.compileSdkVersion=34" >> android/local.properties
-          echo "flutter.targetSdkVersion=34" >> android/local.properties
+          node -e "
+          const fs = require('fs');
+          const file = 'android/app/build.gradle';
+          let content = fs.readFileSync(file, 'utf8');
+          content = content.replace(/compileSdk\s+flutter\.compileSdkVersion/g, 'compileSdk 34');
+          content = content.replace(/targetSdkVersion\s+flutter\.targetSdkVersion/g, 'targetSdkVersion 34');
+          fs.writeFileSync(file, content, 'utf8');
+          "
           
       - name: Install Project Dependencies
         run: flutter pub get
