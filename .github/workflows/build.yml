@@ -8,17 +8,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
       - uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
           java-version: '17'
+          
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-      - name: Get Dependencies
+          
+      # गिटहब खुद पुराना सब हटाकर बिल्कुल फ्रेश री-जनरेट करेगा
+      - name: Re-generate Android Folder from Scratch
+        run: |
+          rm -rf android
+          flutter create --org com.example --platforms=android .
+          
+      - name: Install Project Dependencies
         run: flutter pub get
-      - name: Build APK Cleanly
+        
+      - name: Build VIP APK Freshly
         run: flutter build apk --release
+        
       - name: Upload VIP APK Artifact
         uses: actions/upload-artifact@v4
         with:
