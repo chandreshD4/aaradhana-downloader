@@ -18,8 +18,14 @@ jobs:
         with:
           channel: 'stable'
           
-      # इस बार हम एंड्रॉयड फोल्डर को डिलीट नहीं कर रहे हैं, पुरानी सेटिंग को सुरक्षित रख रहे हैं
-      - name: Force SDK 34 on existing Android project cleanly
+      # पहले नया एंड्रॉयड फ़ोल्डर सही नाम से ताज़ा बनाएंगे
+      - name: Re-generate Android Folder Safely
+        run: |
+          rm -rf android
+          flutter create --org com.example --project-name=aaradhana_downloader --platforms=android .
+          
+      # फ़ोल्डर बनने के तुरंत बाद जादुई कोड जोड़ेंगे ताकि कोई फाइल मिसिंग न हो
+      - name: Force Global SDK 34 for All Plugins
         run: |
           cat << 'SUB' >> android/build.gradle
           subprojects {
