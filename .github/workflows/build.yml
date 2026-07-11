@@ -23,11 +23,11 @@ jobs:
           rm -rf android
           flutter create --org com.example --platforms=android .
           
-      # इस एरर को मारने की असली दवा: डिफ़ॉल्ट SDK 33 को 34 से बदलना
-      - name: Force Android SDK Version 34
+      # सबसे सुरक्षित तरीका: सीधे local.properties में वर्जन 34 इंजेक्ट करना
+      - name: Configure Android SDK Versions Cleanly
         run: |
-          sed -i 's/compileSdkVersion flutter.compileSdkVersion/compileSdkVersion 34/g' android/app/build.gradle
-          sed -i 's/targetSdkVersion flutter.targetSdkVersion/targetSdkVersion 34/g' android/app/build.gradle
+          echo "flutter.compileSdkVersion=34" >> android/local.properties
+          echo "flutter.targetSdkVersion=34" >> android/local.properties
           
       - name: Install Project Dependencies
         run: flutter pub get
