@@ -18,13 +18,12 @@ jobs:
         with:
           channel: 'stable'
           
-      # पहले नया एंड्रॉयड फ़ोल्डर सही नाम से ताज़ा बनाएंगे
       - name: Re-generate Android Folder Safely
         run: |
           rm -rf android
           flutter create --org com.example --project-name=aaradhana_downloader --platforms=android .
           
-      # फ़ोल्डर बनने के तुरंत बाद जादुई कोड जोड़ेंगे ताकि कोई फाइल मिसिंग न हो
+      # यहाँ पर हमने compileSdk और targetSdk को सही ग्रैडल सिंटैक्स में लिख दिया है
       - name: Force Global SDK 34 for All Plugins
         run: |
           cat << 'SUB' >> android/build.gradle
@@ -32,8 +31,10 @@ jobs:
               afterEvaluate { project ->
                   if (project.hasProperty("android")) {
                       project.android {
-                          compileSdkVersion 34
-                          targetSdkVersion 34
+                          compileSdk 34
+                          defaultConfig {
+                              targetSdk 34
+                          }
                       }
                   }
               }
