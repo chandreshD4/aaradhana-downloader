@@ -23,7 +23,6 @@ jobs:
           rm -rf android
           flutter create --org com.example --project-name=aaradhana_downloader --platforms=android .
           
-      # यह जादुई कोड हर एक प्लगइन को जबरदस्ती 34 पर कंपाइल करवाएगा
       - name: Force Global SDK 34 for All Plugins
         run: |
           cat << 'SUB' >> android/build.gradle
@@ -44,8 +43,9 @@ jobs:
       - name: Build VIP APK Freshly
         run: flutter build apk --release
         
+      # यहाँ हमने रास्ता बदल दिया ताकि कोई भी .apk फाइल हो, वह मिल जाए
       - name: Upload VIP APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: aradhana-vip-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: build/app/outputs/flutter-apk/*.apk
