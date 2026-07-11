@@ -43,15 +43,14 @@ jobs:
       - name: Install Project Dependencies
         run: flutter pub get
         
-      # फ्लटर के रास्ते के भरोसे रहने के बजाय, सीधे एंड्रॉयड के अंदर जाकर एपीके असेंबल करना
       - name: Build APK via Direct Gradle
         run: |
           cd android
           ./gradlew assembleRelease
         
-      # अब किसी भी कोने में एपीके बनी हो, गिटहब उसे ढूंढकर अपलोड कर देगा
+      # यहाँ हमने पाथ को पूरी तरह ओपन कर दिया है ताकि गिटहब पूरे प्रोजेक्ट में से .apk ढूंढ निकाले
       - name: Upload VIP APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: aradhana-vip-apk
-          path: "**/build/app/outputs/apk/release/*.apk"
+          path: "**/*.apk"
