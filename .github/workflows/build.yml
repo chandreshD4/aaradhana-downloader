@@ -18,28 +18,17 @@ jobs:
         with:
           channel: 'stable'
           
-      - name: Re-generate Android Folder Freshly
+      - name: Re-generate Android Folder Safely
         run: |
           rm -rf android
-          flutter create --org com.example --platforms=android .
-          
-      # यहाँ पर सिंटैक्स बिल्कुल सही कर दिया है भाई
-      - name: Force SDK Version 34 in Build Script
-        run: |
-          node -e "
-          const fs = require('fs');
-          const file = 'android/app/build.gradle';
-          let content = fs.readFileSync(file, 'utf8');
-          content = content.replace(/compileSdk\s+flutter\.compileSdkVersion/g, 'compileSdk 34');
-          content = content.replace(/targetSdkVersion\s+flutter\.targetSdkVersion/g, 'targetSdkVersion 34');
-          fs.writeFileSync(file, content, 'utf8');
-          "
+          flutter create --org com.example --project-name=aaradhana_downloader --platforms=android .
           
       - name: Install Project Dependencies
         run: flutter pub get
         
-      - name: Build VIP APK Freshly
-        run: flutter build apk --release
+      # बिना किसी फाइल को रिप्लेस किए, सीधे कमांड से वर्जन 34 पर एपीके बिल्ड करना
+      - name: Build VIP APK with Forced SDK 34
+        run: flutter build apk --release --compile-sdk-version=34
         
       - name: Upload VIP APK Artifact
         uses: actions/upload-artifact@v4
