@@ -23,7 +23,6 @@ jobs:
           rm -rf android
           flutter create --org com.example --project-name=aaradhana_downloader --platforms=android .
           
-      # यहाँ पर हमने compileSdk और targetSdk को सही ग्रैडल सिंटैक्स में लिख दिया है
       - name: Force Global SDK 34 for All Plugins
         run: |
           cat << 'SUB' >> android/build.gradle
@@ -44,11 +43,15 @@ jobs:
       - name: Install Project Dependencies
         run: flutter pub get
         
-      - name: Build VIP APK Freshly
-        run: flutter build apk --release
+      # फ्लटर के रास्ते के भरोसे रहने के बजाय, सीधे एंड्रॉयड के अंदर जाकर एपीके असेंबल करना
+      - name: Build APK via Direct Gradle
+        run: |
+          cd android
+          ./gradlew assembleRelease
         
+      # अब किसी भी कोने में एपीके बनी हो, गिटहब उसे ढूंढकर अपलोड कर देगा
       - name: Upload VIP APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: aradhana-vip-apk
-          path: build/app/outputs/flutter-apk/*.apk
+          path: "**/build/app/outputs/apk/release/*.apk"
