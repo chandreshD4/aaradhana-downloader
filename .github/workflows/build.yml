@@ -18,12 +18,8 @@ jobs:
         with:
           channel: 'stable'
           
-      - name: Re-generate Android Folder Safely
-        run: |
-          rm -rf android
-          flutter create --org com.example --project-name=aaradhana_downloader --platforms=android .
-          
-      - name: Force Global SDK 34 for All Plugins
+      # इस बार हम एंड्रॉयड फोल्डर को डिलीट नहीं कर रहे हैं, पुरानी सेटिंग को सुरक्षित रख रहे हैं
+      - name: Force SDK 34 on existing Android project cleanly
         run: |
           cat << 'SUB' >> android/build.gradle
           subprojects {
@@ -31,6 +27,7 @@ jobs:
                   if (project.hasProperty("android")) {
                       project.android {
                           compileSdkVersion 34
+                          targetSdkVersion 34
                       }
                   }
               }
@@ -43,7 +40,6 @@ jobs:
       - name: Build VIP APK Freshly
         run: flutter build apk --release
         
-      # यहाँ हमने रास्ता बदल दिया ताकि कोई भी .apk फाइल हो, वह मिल जाए
       - name: Upload VIP APK Artifact
         uses: actions/upload-artifact@v4
         with:
