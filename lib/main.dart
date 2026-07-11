@@ -42,6 +42,7 @@ class _DownloadScreenState extends State<DownloadScreen> {
   bool _isSuccess = false;
 
   final String _apiKey = "2a2d800e5cmsh0798dd20ef51d17p1d9715jsn2c69b2d0f7d3";
+  final String _apiHost = "all-media-downloader4.p.rapidapi.com";
 
   String _extractVideoId(String url) {
     if (url.contains("youtu.be/")) {
@@ -100,13 +101,7 @@ class _DownloadScreenState extends State<DownloadScreen> {
     });
 
     final videoId = _extractVideoId(rawUrl);
-    bool success = false;
-
-    if (!success) success = await _tryApi1(videoId, rawUrl, isAudio);
-    if (!success) success = await _tryApi2(videoId, isAudio);
-    if (!success) success = await _tryApi3(videoId, isAudio);
-    if (!success) success = await _tryApi4(rawUrl, isAudio);
-    if (!success) success = await _tryApi5(videoId, isAudio);
+    bool success = await _tryAllMediaDownloader(videoId, isAudio);
 
     setState(() {
       _isLoading = false;
@@ -118,102 +113,40 @@ class _DownloadScreenState extends State<DownloadScreen> {
       } else {
         _progress = 0.0;
         _isSuccess = false;
-        _statusMessage = "❌ ડાઉનલોડ ફેલ થયું! બધી વીઆઈપી લિમિટ સમાપ્ત થઈ ગઈ છે.";
+        _statusMessage = "❌ ડાઉનલોડ ફેલ થયું! વીઆઈપી લિમિટ તપાસો અથવા ફરી પ્રયાસ કરો.";
       }
     });
   }
 
-  Future<bool> _tryApi1(String id, String fullUrl, bool isAudio) async {
+  Future<bool> _tryAllMediaDownloader(String id, bool isAudio) async {
     try {
-      setState(() => _statusMessage = "⏳ સર્વર 1 થી પ્રયાસ કરવામાં આવી રહ્યો છે...");
-      final response = await http.get(
-        Uri.parse("https://youtube-media-downloader.p.rapidapi.com/v2/video/details?videoId=$id"),
-        headers: {"x-rapidapi-key": _apiKey, "x-rapidapi-host": "youtube-media-downloader.p.rapidapi.com"},
-      );
-      if (response.statusCode != 200) return false;
-      final data = jsonDecode(response.body);
-      String? dlUrl;
-      if (isAudio) {
-        final audios = data['audios']?['items'] as List?;
-        if (audios != null && audios.isNotEmpty) dlUrl = audios.first['url'];
-      } else {
-        final videos = data['videos']?['items'] as List?;
-        if (videos != null && videos.isNotEmpty) dlUrl = videos.first['url'];
-      }
-      if (dlUrl == null) return false;
-      return await _downloadBinaryWithProgress(dlUrl, isAudio ? "MP3" : "MP4");
-    } catch (_) { return false; }
-  }
-
-  Future<bool> _tryApi2(String id, bool isAudio) async {
-    try {
-      setState(() => _statusMessage = "⏳ સર્વર 2 થી પ્રયાસ ચાલુ છે...");
-      String endpoint = isAudio 
-        ? "https://youtube-video-fast-downloader-24-7.p.rapidapi.com/download_audio/$id?quality=251"
-        : "https://youtube-video-fast-downloader-24-7.p.rapidapi.com/download_video/$id?quality=22";
+      setState(() => _statusMessage = "⏳ વીઆઈપી ઓલ મીડિયા સર્વર થી પ્રયાસ ચાલુ છે...");
       
-      final response = await http.get(Uri.parse(endpoint), headers: {
-        "x-rapidapi-key": _apiKey,
-        "x-rapidapi-host": "youtube-video-fast-downloader-24-7.p.rapidapi.com"
-      });
-      if (response.statusCode != 200) return false;
-      final data = jsonDecode(response.body);
-      String? dlUrl = data['link'] ?? data['url'];
-      if (dlUrl == null) return false;
-      return await _downloadBinaryWithProgress(dlUrl, isAudio ? "MP3" : "MP4");
-    } catch (_) { return false; }
-  }
-
-  Future<bool> _tryApi3(String id, bool isAudio) async {
-    try {
-      setState(() => _statusMessage = "⏳ સર્વર 3 એક્ટિવેટ કરવામાં આવી રહ્યું છે...");
-      String format = isAudio ? "128" : "720";
       final response = await http.get(
-        Uri.parse("https://youtube-mp4-mp3-downloader.p.rapidapi.com/api/v1/download?format=$format&id=$id&audioQuality=128"),
-        headers: {"x-rapidapi-key": _apiKey, "x-rapidapi-host": "youtube-mp4-mp3-downloader.p.rapidapi.com"},
+        Uri.parse("https://$_apiHost/api/youtube/download?id=$id"),
+        headers: {
+          "Content-Type": "application/json",
+          "x-rapidapi-key": _apiKey,
+          "x-rapidapi-host": _apiHost
+        },
       );
+      
       if (response.statusCode != 200) return false;
-      final data = jsonDecode(response.body);
-      String? dlUrl = data['link'] ?? data['url'] ?? data['download_url'];
-      if (dlUrl == null) return false;
-      return await _downloadBinaryWithProgress(dlUrl, isAudio ? "MP3" : "MP4");
-    } catch (_) { return false; }
-  }
-
-  Future<bool> _tryApi4(String fullUrl, bool isAudio) async {
-    try {
-      setState(() => _statusMessage = "⏳ સર્વર 4 થી કનેક્ટ થઈ રહ્યું છે...");
-      final response = await http.get(
-        Uri.parse("https://all-media-downloader4.p.rapidapi.com/api/youtube/download?id=${Uri.encodeComponent(fullUrl)}"),
-        headers: {"x-rapidapi-key": _apiKey, "x-rapidapi-host": "all-media-downloader4.p.rapidapi.com"},
-      );
-      if (response.statusCode != 200) return false;
+      
       final data = jsonDecode(response.body);
       String? dlUrl;
+      
       if (isAudio) {
         dlUrl = data['audio'] ?? data['formats']?[0]?['url'];
       } else {
         dlUrl = data['video'] ?? data['formats']?[1]?['url'] ?? data['formats']?[0]?['url'];
       }
+      
       if (dlUrl == null) return false;
       return await _downloadBinaryWithProgress(dlUrl, isAudio ? "MP3" : "MP4");
-    } catch (_) { return false; }
-  }
-
-  Future<bool> _tryApi5(String id, bool isAudio) async {
-    if (!isAudio) return false;
-    try {
-      setState(() => _statusMessage = "⏳ સર્વર 5 (ફક્ત ઓડિયો) ટ્રિગર થઈ રહ્યું છે...");
-      final response = await http.get(
-        Uri.parse("https://youtube-mp3-downloader5.p.rapidapi.com/?youtube_url=https://www.youtube.com/watch?v=$id"),
-        headers: {"x-rapidapi-key": _apiKey, "x-rapidapi-host": "youtube-mp3-downloader5.p.rapidapi.com"},
-      );
-      if (response.statusCode != 200) return false;
-      final data = jsonDecode(response.body);
-      String? dlUrl = data['link'] ?? data['url'];
-      if (dlUrl == null) return false;
-      return await _downloadBinaryWithProgress(dlUrl, "MP3");
-    } catch (_) { return false; }
+    } catch (_) { 
+      return false; 
+    }
   }
 
   Future<bool> _downloadBinaryWithProgress(String url, String type) async {
