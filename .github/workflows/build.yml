@@ -23,12 +23,26 @@ jobs:
           rm -rf android
           flutter create --org com.example --project-name=aaradhana_downloader --platforms=android .
           
+      # यह जादुई कोड हर एक प्लगइन को जबरदस्ती 34 पर कंपाइल करवाएगा
+      - name: Force Global SDK 34 for All Plugins
+        run: |
+          cat << 'SUB' >> android/build.gradle
+          subprojects {
+              afterEvaluate { project ->
+                  if (project.hasProperty("android")) {
+                      project.android {
+                          compileSdkVersion 34
+                      }
+                  }
+              }
+          }
+          SUB
+          
       - name: Install Project Dependencies
         run: flutter pub get
         
-      # बिना किसी फाइल को रिप्लेस किए, सीधे कमांड से वर्जन 34 पर एपीके बिल्ड करना
-      - name: Build VIP APK with Forced SDK 34
-        run: flutter build apk --release --compile-sdk-version=34
+      - name: Build VIP APK Freshly
+        run: flutter build apk --release
         
       - name: Upload VIP APK Artifact
         uses: actions/upload-artifact@v4
